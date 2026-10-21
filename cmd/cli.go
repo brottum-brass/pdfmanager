@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -32,11 +33,11 @@ Commands:
 `)
 }
 
-func RunInfo(m *pkg.Manager, args []string) error {
+func RunInfo(ctx context.Context, manager *pkg.Manager, args []string) error {
 	if len(args) != 1 {
 		return errors.New("usage: pdfmanager info <file.pdf>")
 	}
-	n, err := m.PageCount(args[0])
+	n, err := manager.PageCount(ctx, args[0])
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func RunInfo(m *pkg.Manager, args []string) error {
 	return nil
 }
 
-func RunSplit(m *pkg.Manager, args []string) error {
+func RunSplit(ctx context.Context, manager *pkg.Manager, args []string) error {
 	fs := flag.NewFlagSet("split", flag.ContinueOnError)
 	in := fs.String("in", "", "input PDF")
 	out := fs.String("out", "", "name of the output folder, created inside your Downloads folder")
@@ -82,11 +83,11 @@ func RunSplit(m *pkg.Manager, args []string) error {
 	)
 	switch {
 	case *each:
-		written, err = m.SplitEachPage(*in, *out)
+		written, err = manager.SplitEachPage(ctx, *in, *out)
 	case *every > 0:
-		written, err = m.SplitEveryNPages(*in, *out, *every)
+		written, err = manager.SplitEveryNPages(ctx, *in, *out, *every)
 	default:
-		written, err = m.SplitRanges(*in, *out, *ranges, *combine)
+		written, err = manager.SplitRanges(ctx, *in, *out, *ranges, *combine)
 	}
 	for _, f := range written {
 		fmt.Println("wrote", f)
@@ -94,7 +95,7 @@ func RunSplit(m *pkg.Manager, args []string) error {
 	return err
 }
 
-func RunMerge(m *pkg.Manager, args []string) error {
+func RunMerge(ctx context.Context, manager *pkg.Manager, args []string) error {
 	fs := flag.NewFlagSet("merge", flag.ContinueOnError)
 	out := fs.String("out", "", "name of the merged PDF, saved in your Downloads folder")
 	divider := fs.Bool("divider", false, "insert a blank page between merged files")
@@ -106,7 +107,7 @@ func RunMerge(m *pkg.Manager, args []string) error {
 		return errors.New("usage: pdfmanager merge -out <file-name> <a.pdf> <b.pdf> ...")
 	}
 
-	outFile, err := m.Merge(inFiles, *out, *divider)
+	outFile, err := manager.Merge(ctx, inFiles, *out, *divider)
 	if err != nil {
 		return err
 	}

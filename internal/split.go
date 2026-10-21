@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,7 +28,7 @@ func (s *Split) baseName() string {
 	return strings.TrimSuffix(filepath.Base(s.InputFile), filepath.Ext(s.InputFile))
 }
 
-func (s *Split) Ranges(ranges []PageRange, combine bool) ([]string, error) {
+func (s *Split) Ranges(ctx context.Context, ranges []PageRange, combine bool) ([]string, error) {
 	if len(ranges) == 0 {
 		return nil, fmt.Errorf("no page ranges provided")
 	}
@@ -46,7 +47,7 @@ func (s *Split) Ranges(ranges []PageRange, combine bool) ([]string, error) {
 		}
 
 		outputFile := filepath.Join(s.OutputDirName, fmt.Sprintf("%s_selected.pdf", base))
-		if err := s.engine.Trim(s.InputFile, outputFile, parts); err != nil {
+		if err := s.engine.Trim(ctx, s.InputFile, outputFile, parts); err != nil {
 			return nil, fmt.Errorf("writing %s: %w", outputFile, err)
 		}
 
@@ -59,7 +60,7 @@ func (s *Split) Ranges(ranges []PageRange, combine bool) ([]string, error) {
 	for _, r := range uniqueRanges {
 		outputFile := filepath.Join(s.OutputDirName, fmt.Sprintf("%s_%s.pdf", base, r.String()))
 
-		if err := s.engine.Trim(s.InputFile, outputFile, []string{r.String()}); err != nil {
+		if err := s.engine.Trim(ctx, s.InputFile, outputFile, []string{r.String()}); err != nil {
 			return nil, fmt.Errorf("writing %s: %w", outputFile, err)
 		}
 
@@ -69,8 +70,8 @@ func (s *Split) Ranges(ranges []PageRange, combine bool) ([]string, error) {
 	return writtenFiles, nil
 }
 
-func (s *Split) RangesFromSpecification(specification string, combine bool) ([]string, error) {
-	totalPages, err := s.engine.PageCount(s.InputFile)
+func (s *Split) RangesFromSpecification(ctx context.Context, specification string, combine bool) ([]string, error) {
+	totalPages, err := s.engine.PageCount(ctx, s.InputFile)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", s.InputFile, err)
 	}
@@ -80,11 +81,11 @@ func (s *Split) RangesFromSpecification(specification string, combine bool) ([]s
 		return nil, fmt.Errorf("parsing specification ranges: %w", err)
 	}
 
-	return s.Ranges(ranges, combine)
+	return s.Ranges(ctx, ranges, combine)
 }
 
-func (s *Split) EveryNPages(n int) ([]string, error) {
-	totalPages, err := s.engine.PageCount(s.InputFile)
+func (s *Split) EveryNPages(ctx context.Context, n int) ([]string, error) {
+	totalPages, err := s.engine.PageCount(ctx, s.InputFile)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", s.InputFile, err)
 	}
@@ -94,5 +95,5 @@ func (s *Split) EveryNPages(n int) ([]string, error) {
 		return nil, fmt.Errorf("chunking pages: %w", err)
 	}
 
-	return s.Ranges(ranges, false)
+	return s.Ranges(ctx, ranges, false)
 }

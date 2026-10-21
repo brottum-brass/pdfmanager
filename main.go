@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -25,15 +26,17 @@ func main() {
 		os.Exit(2)
 	}
 
+	ctx := context.Background()
+
 	manager, err := pkg.NewDefaultManager()
 	if err == nil {
 		switch os.Args[1] {
 		case "info":
-			err = cmd.RunInfo(manager, os.Args[2:])
+			err = cmd.RunInfo(ctx, manager, os.Args[2:])
 		case "split":
-			err = cmd.RunSplit(manager, os.Args[2:])
+			err = cmd.RunSplit(ctx, manager, os.Args[2:])
 		case "merge":
-			err = cmd.RunMerge(manager, os.Args[2:])
+			err = cmd.RunMerge(ctx, manager, os.Args[2:])
 		}
 	}
 	if err != nil {

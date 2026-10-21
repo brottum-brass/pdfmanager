@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,7 +23,7 @@ func NewMerge(engine engine.Engine, inputFiles []string, outputFile string) *Mer
 	}
 }
 
-func (m *Merge) All(divider bool) error {
+func (m *Merge) All(ctx context.Context, divider bool) error {
 	if len(m.InputFiles) == 0 {
 		return fmt.Errorf("need at least two files to merge")
 	}
@@ -48,5 +49,5 @@ func (m *Merge) All(divider bool) error {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	return m.engine.Merge(m.InputFiles, m.OutputFile, divider)
+	return m.engine.Merge(ctx, m.InputFiles, m.OutputFile, divider)
 }

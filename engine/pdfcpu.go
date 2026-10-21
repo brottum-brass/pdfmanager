@@ -9,8 +9,7 @@ import (
 )
 
 type PDFCPUEngine struct {
-	config  *model.Configuration
-	context context.Context
+	config *model.Configuration
 }
 
 func NewPDFCPUEngine() (*PDFCPUEngine, error) {
@@ -20,19 +19,18 @@ func NewPDFCPUEngine() (*PDFCPUEngine, error) {
 	}
 
 	return &PDFCPUEngine{
-		config:  config,
-		context: context.Background(),
+		config: config,
 	}, nil
 }
 
-func (e *PDFCPUEngine) PageCount(path string) (int, error) {
-	return api.PageCountFile(e.context, path)
+func (e *PDFCPUEngine) PageCount(ctx context.Context, path string) (int, error) {
+	return api.PageCountFile(ctx, path)
 }
 
-func (e *PDFCPUEngine) Trim(inputFile string, outputFile string, pageRanges []string) error {
-	return api.TrimFile(e.context, inputFile, outputFile, pageRanges, e.config)
+func (e *PDFCPUEngine) Trim(ctx context.Context, inputFile string, outputFile string, pageRanges []string) error {
+	return api.TrimFile(ctx, inputFile, outputFile, pageRanges, e.config)
 }
 
-func (e *PDFCPUEngine) Merge(inputFiles []string, outputFile string, divider bool) error {
-	return api.MergeCreateFile(e.context, inputFiles, outputFile, divider, e.config)
+func (e *PDFCPUEngine) Merge(ctx context.Context, inputFiles []string, outputFile string, divider bool) error {
+	return api.MergeCreateFile(ctx, inputFiles, outputFile, divider, e.config)
 }
